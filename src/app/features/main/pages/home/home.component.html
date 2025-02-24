@@ -1,0 +1,20 @@
+<svg #svgContainer
+     [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight"
+     preserveAspectRatio="xMidYMid meet"
+     (click)="addPoint($event)"
+     style="width: 100%; height: 100%; border: 1px solid #ccc;">
+
+  <!-- Фоновое изображение (прозрачный SVG план) -->
+  <image [attr.href]="'assets/plan.png'"
+         width="100%"
+         height="100%"
+         pointer-events="none" />
+
+  <!-- Динамические точки -->
+  <circle *ngFor="let point of points; let i = index"
+          [attr.cx]="point.x"
+          [attr.cy]="point.y"
+          r="10"
+          fill="red"
+          (click)="showInfo($event, point)" />
+</svg>
