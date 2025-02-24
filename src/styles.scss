@@ -1,3 +1,14 @@
 /* You can add global styles to this file, and also import other style files */
 @import "primeng/resources/themes/lara-light-blue/theme.css";
 @import "primeng/resources/primeng.css";
+
+.mt-2 {
+  margin-top: 1em;
+}
+.d-grid {
+  display: grid;
+}
+input:focus {
+  outline: none; /* Убирает синюю обводку */
+  box-shadow: none; /* Убирает тень, если она есть */
+}

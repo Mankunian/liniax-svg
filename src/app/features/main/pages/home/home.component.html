@@ -14,29 +14,72 @@
              pointer-events="none"/>
 
       <!-- Динамические точки -->
-      <circle *ngFor="let point of points; let i = index"
-              [attr.cx]="point.x"
-              [attr.cy]="point.y"
-              r="5"
-              fill="red"
-              (click)="showInfo($event, point)"/>
+<!--      <circle *ngFor="let point of points; let i = index"-->
+<!--              [attr.cx]="point.x"-->
+<!--              [attr.cy]="point.y"-->
+<!--              r="5"-->
+<!--              fill="red"-->
+<!--              (click)="showInfo($event, point)"/>-->
+
+      <circle
+        *ngIf="svgForm.get('coordinateX')?.value && svgForm.get('coordinateY')?.value"
+        [attr.cx]="svgForm.get('coordinateX')?.value"
+        [attr.cy]="svgForm.get('coordinateY')?.value"
+        r="5"
+        fill="red"
+        stroke="black"
+        stroke-width="1"
+      />
     </svg>
   </div>
 
 </div>
 
-<p-dialog header="Edit Profile" [modal]="true" [(visible)]="visibleDialog" [style]="{ width: '25rem' }">
+<p-dialog header="Add point" [modal]="true" [(visible)]="visibleDialog" [style]="{ width: '40rem' }">
   <span class="p-text-secondary block mb-5">Update your information.</span>
-  <div class="flex align-items-center gap-3 mb-3">
-    <label for="username" class="font-semibold w-6rem">Username</label>
-    <input pInputText id="username" class="flex-auto" autocomplete="off" />
-  </div>
-  <div class="flex align-items-center gap-3 mb-5">
-    <label for="email" class="font-semibold w-6rem">Email</label>
-    <input pInputText id="email" class="flex-auto" autocomplete="off" />
-  </div>
-  <div class="flex justify-content-end gap-2">
-    <p-button label="Cancel" severity="secondary" (onClick)="visibleDialog = false" />
-    <p-button label="Save" (onClick)="visibleDialog = false" />
+
+  <form class="mt-2" [formGroup]="svgForm">
+    <div class="d-grid">
+      <label for="coordinateX">CoordinateX</label>
+      <input
+        readonly
+        pInputText
+        id="coordinateX"
+        formControlName="coordinateX"/>
+    </div>
+    <div class="d-grid mt-2">
+      <label for="coordinateX">CoordinateY</label>
+      <input
+        readonly
+        pInputText
+        id="coordinateY"
+        formControlName="coordinateY"/>
+    </div>
+
+    <div class="d-grid mt-2">
+      <label for="pointName">Point name</label>
+      <input
+        pInputText
+        id="pointName"
+        formControlName="pointName"/>
+    </div>
+
+    <div class="d-grid mt-2">
+      <label for="description">Description</label>
+
+      <textarea
+        id="description"
+        rows="5"
+        cols="30"
+        pInputTextarea
+        formControlName="description"></textarea>
+    </div>
+
+  </form>
+
+
+  <div class="flex justify-content-end gap-2 mt-2 actions">
+    <p-button label="Отмена" severity="secondary" (onClick)="visibleDialog = false"/>
+    <p-button label="Сохранить" (onClick)="saveNewPoint()"/>
   </div>
 </p-dialog>
