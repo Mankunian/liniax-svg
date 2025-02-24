@@ -1,10 +1,12 @@
 import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
 import {CommonModule} from "@angular/common";
+import {CardModule} from "primeng/card";
+import {Button} from "primeng/button";
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule], // Добавляем сюда
+  imports: [CommonModule, CardModule, Button], // Добавляем сюда
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -14,30 +16,43 @@ export class HomeComponent implements AfterViewInit{
   points: { x: number, y: number }[] = [];
   svgWidth = 1000; // Установи размеры SVG под твой план
   svgHeight = 600;
+  selectedPoint: { x: number; y: number } | null = null;
 
   ngAfterViewInit() {
-    const svg = this.svgContainer.nativeElement as SVGSVGElement;
-    const rect = svg.getBoundingClientRect();
-
-    // Если надо, можно получить реальные размеры
-    this.svgWidth = rect.width;
-    this.svgHeight = rect.height;
+    setTimeout(() => {
+      this.svgContainer.nativeElement.getBoundingClientRect(); // Принудительное обновление размеров
+    }, 0);
   }
+
 
   addPoint(event: MouseEvent) {
     const svg = this.svgContainer.nativeElement as SVGSVGElement;
     const point = svg.createSVGPoint();
 
+    // Берем координаты относительно окна
     point.x = event.clientX;
     point.y = event.clientY;
 
-    const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
+    // Получаем матрицу трансформации
+    const ctm = svg.getScreenCTM();
+    if (!ctm) {
+      console.warn("CTM не найдено, используем приближенные координаты.");
+      this.points.push({ x: point.x, y: point.y });
+      return;
+    }
 
-    this.points.push({ x: svgPoint.x, y: svgPoint.y });
+    // Трансформируем координаты в систему SVG
+    const svgPoint = point.matrixTransform(ctm.inverse());
+
+    // Добавляем точку
+    this.points = [...this.points, { x: svgPoint.x, y: svgPoint.y }];
   }
+
 
   showInfo(event: MouseEvent, point: { x: number, y: number }) {
     event.stopPropagation(); // Чтобы клик по точке не добавлял новую точку
     alert(`Точка: X=${point.x}, Y=${point.y}`);
+    this.selectedPoint = point; // Сохраняем точку
+    console.log("Выбранная точка:", this.selectedPoint);
   }
 }

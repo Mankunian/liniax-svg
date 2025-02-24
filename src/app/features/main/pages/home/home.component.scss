@@ -3,3 +3,14 @@
     r: 15; /* Увеличиваем точки для удобства на мобильных */
   }
 }
+.container {
+  display: flex;
+  gap: 20px; /* Отступ между колонками */
+}
+
+.column {
+  flex: 1; /* Равное распределение */
+  //padding: 20px;
+  //background-color: lightgray;
+  //text-align: center;
+}
