@@ -8,7 +8,7 @@ import { MainRoutingModule } from './main-routing.module';
   declarations: [],
   imports: [
     CommonModule,
-    MainRoutingModule
+    MainRoutingModule,
   ]
 })
 export class MainModule { }

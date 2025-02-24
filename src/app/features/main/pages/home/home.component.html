@@ -22,24 +22,21 @@
               (click)="showInfo($event, point)"/>
     </svg>
   </div>
-<!--  <div class="column">-->
-<!--    <div class="card flex">-->
-<!--      <p-card header="Информация о точке" subheader="Card Subheader" [style]="{ width: '360px' }">-->
 
-<!--        <p>-->
-<!--          Координат X {{ selectedPoint?.x }}-->
-
-<!--        </p>-->
-<!--        <p>-->
-<!--          Координат Y {{ selectedPoint?.y }}-->
-<!--        </p>-->
-<!--        <ng-template pTemplate="footer">-->
-<!--          <div class="flex gap-3 mt-1">-->
-<!--            <p-button label="Cancel" severity="secondary" class="w-full" styleClass="w-full"/>-->
-<!--            <p-button label="Save" class="w-full" styleClass="w-full"/>-->
-<!--          </div>-->
-<!--        </ng-template>-->
-<!--      </p-card>-->
-<!--    </div>-->
-<!--  </div>-->
 </div>
+
+<p-dialog header="Edit Profile" [modal]="true" [(visible)]="visibleDialog" [style]="{ width: '25rem' }">
+  <span class="p-text-secondary block mb-5">Update your information.</span>
+  <div class="flex align-items-center gap-3 mb-3">
+    <label for="username" class="font-semibold w-6rem">Username</label>
+    <input pInputText id="username" class="flex-auto" autocomplete="off" />
+  </div>
+  <div class="flex align-items-center gap-3 mb-5">
+    <label for="email" class="font-semibold w-6rem">Email</label>
+    <input pInputText id="email" class="flex-auto" autocomplete="off" />
+  </div>
+  <div class="flex justify-content-end gap-2">
+    <p-button label="Cancel" severity="secondary" (onClick)="visibleDialog = false" />
+    <p-button label="Save" (onClick)="visibleDialog = false" />
+  </div>
+</p-dialog>
