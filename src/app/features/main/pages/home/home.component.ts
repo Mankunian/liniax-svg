@@ -29,7 +29,7 @@ interface MockData {
 export class HomeComponent implements AfterViewInit, OnInit {
   @ViewChild('svgContainer') svgContainer!: ElementRef;
   @ViewChild('transformGroup') transformGroup!: ElementRef;
-
+  originalViewBox = ''; // Изначальное значение viewBox
   points: { pointName: string; coordinateX: number; coordinateY: number; description: string; id: number }[] = [];
   svgWidth = 800; // Размер SVG (подстрой под твои данные)
   svgHeight = 600;
@@ -46,11 +46,11 @@ export class HomeComponent implements AfterViewInit, OnInit {
   visibleDialog = false;
   svgForm!: FormGroup;
   mockData: MockData[] = [];
-  viewBox = `0 0 ${this.svgWidth} ${this.svgHeight}`;
 
   constructor(
     private storage: StorageService
   ) {
+    this.originalViewBox = `0 0 ${this.svgWidth} ${this.svgHeight}`;
   }
 
   ngAfterViewInit() {
@@ -64,7 +64,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
     hammer.on('pinchend', () => this.onPinchEnd());
     hammer.on('panend', () => this.onPanEnd());
 
-    this.svgContainer.nativeElement.addEventListener('wheel', (event: WheelEvent) => this.onWheel(event));
+    // this.svgContainer.nativeElement.addEventListener('wheel', (event: WheelEvent) => this.onWheel(event));
 
 
     setTimeout(() => {
@@ -114,6 +114,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
   ngOnInit(): void {
     this.initForm();
     this.getMockData();
+
   }
 
   initForm() {
@@ -147,42 +148,46 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
 
   addPoint(event: MouseEvent) {
-    this.svgForm.reset();
     const svg = this.svgContainer.nativeElement as SVGSVGElement;
-    const point = svg.createSVGPoint();
-
-    // Берем координаты относительно окна
-    point.x = event.clientX;
-    point.y = event.clientY;
-
-    // Получаем матрицу трансформации
-    const ctm = svg.getScreenCTM();
-    if (!ctm) {
-      console.warn("CTM не найдено, используем приближенные координаты.");
-      this.points.push({description: "", id: 0, pointName: "", coordinateX: point.x, coordinateY: point.y});
+    // Проверяем, изменился ли viewBox
+    if (svg.getAttribute('viewBox') !== this.originalViewBox) {
+      alert('Вернитесь в исходное положение перед добавлением точки.');
       return;
     }
 
-    // Трансформируем координаты в систему SVG
-    const svgPoint = point.matrixTransform(ctm.inverse());
 
-    // Добавляем точку
-    // @ts-ignore
-    this.points = [...this.points, {x: svgPoint.x, y: svgPoint.y}];
+    this.svgForm.reset();
+    const rect = svg.getBoundingClientRect(); // Размеры SVG в пикселях
 
+    // Преобразуем координаты клика в систему SVG
+    const scaleX = this.svgWidth / rect.width;
+    const scaleY = this.svgHeight / rect.height;
+    const svgX = (event.clientX - rect.left) * scaleX;
+    const svgY = (event.clientY - rect.top) * scaleY;
 
-    this.svgForm.get('coordinateX')?.setValue(svgPoint.x);
-    this.svgForm.get('coordinateY')?.setValue(svgPoint.y);
-    this.svgForm.get('id')?.setValue(null);
-    this.svgForm.get('pointName')?.setValue(null);
-    this.svgForm.get('description')?.setValue(null);
+    // Добавляем точку в список
+    this.addPointToList(svgX, svgY);
+
+    // Заполняем форму
+    this.svgForm.patchValue({
+      coordinateX: svgX,
+      coordinateY: svgY,
+      id: null,
+      pointName: null,
+      description: null
+    });
 
     this.selectedPoint = this.svgForm.value;
+
+    // Открываем модалку через 1 сек.
     setTimeout(() => {
       this.visibleDialog = true;
-    }, 1000)
+    }, 1000);
   }
 
+  private addPointToList(x: number, y: number) {
+    this.points = [...this.points, {description: "", id: 0, pointName: "", coordinateX: x, coordinateY: y}];
+  }
 
   showInfo(event: MouseEvent, point: any) {
     event.stopPropagation(); // Чтобы клик по точке не добавлял новую точку
