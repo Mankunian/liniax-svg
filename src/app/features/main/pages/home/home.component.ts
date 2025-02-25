@@ -8,7 +8,6 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {FormGroup, FormControl, Validators} from '@angular/forms';
 import {InputTextareaModule} from "primeng/inputtextarea";
 import {StorageService} from "../../../../services/storage.service";
-import {isArray} from "@angular/compiler-cli/src/ngtsc/annotations/common";
 import {SelectButtonModule} from "primeng/selectbutton";
 
 interface MockData {
