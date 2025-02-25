@@ -5,7 +5,7 @@
       [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight"
       preserveAspectRatio="none"
       (click)="addPoint($event)"
-      style="width: 100%; height: 100%; border: 2px solid red;">
+      style="width: 100%; height: 100%; border: 2px solid blue;">
 
       <!-- Фоновое изображение (прозрачный SVG план) -->
       <image [attr.href]="'assets/plan.jpg'"
@@ -14,20 +14,20 @@
              pointer-events="none"/>
 
       <!-- Динамические точки -->
-<!--      <circle *ngFor="let point of points; let i = index"-->
-<!--              [attr.cx]="point.x"-->
-<!--              [attr.cy]="point.y"-->
-<!--              r="5"-->
-<!--              fill="red"-->
-<!--              (click)="showInfo($event, point)"/>-->
+      <circle *ngFor="let point of points; let i = index"
+              [attr.cx]="point.coordinateX"
+              [attr.cy]="point.coordinateY"
+              r="5"
+              fill="blue"
+              (click)="showInfo($event, point)"/>
 
       <circle
         *ngIf="svgForm.get('coordinateX')?.value && svgForm.get('coordinateY')?.value"
         [attr.cx]="svgForm.get('coordinateX')?.value"
         [attr.cy]="svgForm.get('coordinateY')?.value"
         r="5"
-        fill="red"
-        stroke="black"
+        fill="blue"
+        stroke="white"
         stroke-width="1"
       />
     </svg>

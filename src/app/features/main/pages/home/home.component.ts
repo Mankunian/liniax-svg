@@ -8,6 +8,7 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {FormGroup, FormControl, Validators} from '@angular/forms';
 import {InputTextareaModule} from "primeng/inputtextarea";
 import {StorageService} from "../../../../services/storage.service";
+import {isArray} from "@angular/compiler-cli/src/ngtsc/annotations/common";
 
 interface MockData {
   id: number,
@@ -28,14 +29,15 @@ interface MockData {
 export class HomeComponent implements AfterViewInit, OnInit {
   @ViewChild('svgContainer') svgContainer!: ElementRef;
 
-  points: { x: number, y: number }[] = [];
+  points: { pointName: string; coordinateX: number; coordinateY: number; description: string; id: number }[] = [];
   svgWidth = 1000; // Установи размеры SVG под твой план
   svgHeight = 600;
-  selectedPoint: { x: number; y: number } | null = null;
+  selectedPoint: MockData | null = null;
 
   visibleDialog = false;
   svgForm!: FormGroup;
-  mockData!: MockData
+  mockData: MockData[] = [];
+
 
   constructor(
     private storage: StorageService
@@ -64,14 +66,31 @@ export class HomeComponent implements AfterViewInit, OnInit {
   }
 
   getMockData() {
-    this.mockData = this.storage.getItem('mockData');
-    console.log(this.mockData)
-    this.svgForm.get('coordinateX')?.setValue(this.mockData.coordinateX)
-    this.svgForm.get('coordinateY')?.setValue(this.mockData.coordinateY)
+    // this.mockData = this.storage.getItem('mockData');
+    // console.log(this.mockData)
+    // this.svgForm.get('coordinateX')?.setValue(this.mockData?.coordinateX)
+    // this.svgForm.get('coordinateY')?.setValue(this.mockData?.coordinateY)
+    this.mockData = this.storage.getItem('mockData') || [];
+
+    if (!Array.isArray(this.mockData)) {
+      this.mockData = []; // Защита от ошибок, если вдруг данные не массив
+    }
+
+    console.log(this.mockData);
+
+    // Обновляем `points` для отрисовки точек в SVG
+    this.points = this.mockData.map(item => ({
+      coordinateX: item.coordinateX,
+      coordinateY: item.coordinateY,
+      pointName: item.pointName,
+      description: item.description,
+      id: item.id
+    }))
   }
 
 
   addPoint(event: MouseEvent) {
+    this.svgForm.reset();
     const svg = this.svgContainer.nativeElement as SVGSVGElement;
     const point = svg.createSVGPoint();
 
@@ -83,7 +102,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
     const ctm = svg.getScreenCTM();
     if (!ctm) {
       console.warn("CTM не найдено, используем приближенные координаты.");
-      this.points.push({x: point.x, y: point.y});
+      this.points.push({description: "", id: 0, pointName: "", coordinateX: point.x, coordinateY: point.y});
       return;
     }
 
@@ -91,39 +110,60 @@ export class HomeComponent implements AfterViewInit, OnInit {
     const svgPoint = point.matrixTransform(ctm.inverse());
 
     // Добавляем точку
+    // @ts-ignore
     this.points = [...this.points, {x: svgPoint.x, y: svgPoint.y}];
+
+
+
+
+    this.svgForm.get('coordinateX')?.setValue(svgPoint.x);
+    this.svgForm.get('coordinateY')?.setValue(svgPoint.y);
+    setTimeout(() => {
+      this.visibleDialog = true;
+    }, 1000)
   }
 
 
-  showInfo(event: MouseEvent, point: { x: number, y: number }) {
+  showInfo(event: MouseEvent, point: any) {
     event.stopPropagation(); // Чтобы клик по точке не добавлял новую точку
-    // alert(`Точка: X=${point.x}, Y=${point.y}`);
     this.selectedPoint = point; // Сохраняем точку
-    console.log("Выбранная точка:", this.selectedPoint);
-    this.visibleDialog = true;
 
+    console.log('point', point);
+    this.visibleDialog = true;
     this.bindForm();
+
   }
 
   bindForm() {
-    this.svgForm.get('coordinateX')?.setValue(this.selectedPoint?.x);
-    this.svgForm.get('coordinateY')?.setValue(this.selectedPoint?.y);
+    this.svgForm.get('coordinateX')?.setValue(this.selectedPoint?.coordinateX);
+    this.svgForm.get('coordinateY')?.setValue(this.selectedPoint?.coordinateY);
+    this.svgForm.get('pointName')?.setValue(this.selectedPoint?.pointName);
+    this.svgForm.get('description')?.setValue(this.selectedPoint?.description);
+    this.svgForm.get('id')?.setValue(this.selectedPoint?.id);
   }
 
   saveNewPoint() {
-    if (this.storage.existItem('mockData')) {
-      const mockData = this.storage.getItem('mockData');
-      if (mockData && mockData.length > 0) {
-        const lastItem = mockData[mockData.length - 1]; // Берем последний элемент массива
-        this.svgForm.get('id')?.setValue(lastItem.id + 1);
-      } else {
-        this.svgForm.get('id')?.setValue(0);
-      }
-      this.storage.setItem('mockData', this.svgForm.value)
-    } else {
-      this.svgForm.get('id')?.setValue(0);
-      this.storage.setItem('mockData', this.svgForm.value)
+    let mockData = this.storage.getItem('mockData') || []; // Загружаем данные
+
+    if (!Array.isArray(mockData)) {
+      mockData = []; // Если данные не массив, создаем новый
     }
+
+    let newId = 0;
+    if (mockData.length > 0) {
+      const lastItem = mockData[mockData.length - 1];
+      newId = lastItem.id + 1;
+    }
+
+    this.svgForm.get('id')?.setValue(newId);
+
+    // Добавляем новый объект в массив
+    mockData.push(this.svgForm.value);
+
+    // Сохраняем обновленный массив
+    this.storage.setItem('mockData', mockData);
+
     this.visibleDialog = false;
   }
+
 }
