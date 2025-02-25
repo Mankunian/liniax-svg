@@ -6,11 +6,23 @@
   margin-top: 1em;
 }
 
+.mb-2 {
+  margin-bottom: 1em
+}
+
 .d-grid {
   display: grid;
 }
 
-input:focus, textarea:focus {
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+input:focus, textarea:focus, p-button:focus {
   outline: none; /* Убирает синюю обводку */
   box-shadow: none; /* Убирает тень, если она есть */
 }

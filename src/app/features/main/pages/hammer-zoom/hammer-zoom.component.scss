@@ -1,0 +1,11 @@
+.svg-container {
+  width: 400px;
+  height: 400px;
+  overflow: hidden;
+  border: 2px solid black;
+  touch-action: none;
+}
+
+svg {
+  transform-origin: center;
+}
