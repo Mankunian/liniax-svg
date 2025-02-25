@@ -66,10 +66,6 @@ export class HomeComponent implements AfterViewInit, OnInit {
   }
 
   getMockData() {
-    // this.mockData = this.storage.getItem('mockData');
-    // console.log(this.mockData)
-    // this.svgForm.get('coordinateX')?.setValue(this.mockData?.coordinateX)
-    // this.svgForm.get('coordinateY')?.setValue(this.mockData?.coordinateY)
     this.mockData = this.storage.getItem('mockData') || [];
 
     if (!Array.isArray(this.mockData)) {
@@ -114,10 +110,13 @@ export class HomeComponent implements AfterViewInit, OnInit {
     this.points = [...this.points, {x: svgPoint.x, y: svgPoint.y}];
 
 
-
-
     this.svgForm.get('coordinateX')?.setValue(svgPoint.x);
     this.svgForm.get('coordinateY')?.setValue(svgPoint.y);
+    this.svgForm.get('id')?.setValue(null);
+    this.svgForm.get('pointName')?.setValue(null);
+    this.svgForm.get('description')?.setValue(null);
+
+    this.selectedPoint = this.svgForm.value;
     setTimeout(() => {
       this.visibleDialog = true;
     }, 1000)
@@ -128,7 +127,6 @@ export class HomeComponent implements AfterViewInit, OnInit {
     event.stopPropagation(); // Чтобы клик по точке не добавлял новую точку
     this.selectedPoint = point; // Сохраняем точку
 
-    console.log('point', point);
     this.visibleDialog = true;
     this.bindForm();
 
@@ -164,6 +162,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
     this.storage.setItem('mockData', mockData);
 
     this.visibleDialog = false;
+    this.getMockData();
   }
 
 }

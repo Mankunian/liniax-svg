@@ -35,8 +35,11 @@
 
 </div>
 
-<p-dialog header="Add point" [modal]="true" [(visible)]="visibleDialog" [style]="{ width: '40rem' }">
-  <span class="p-text-secondary block mb-5">Update your information.</span>
+<p-dialog [header]="selectedPoint && selectedPoint.id ? 'View point' : 'Add point'" [modal]="true"
+          [(visible)]="visibleDialog" [style]="{ width: '40rem' }">
+  <span class="p-text-secondary block mb-5">
+    {{ selectedPoint && selectedPoint.id ? 'Update' : 'Add' }} your information.
+  </span>
 
   <form class="mt-2" [formGroup]="svgForm">
     <div class="d-grid">
@@ -59,6 +62,7 @@
     <div class="d-grid mt-2">
       <label for="pointName">Point name</label>
       <input
+        [readOnly]="selectedPoint && selectedPoint.id"
         pInputText
         id="pointName"
         formControlName="pointName"/>
@@ -68,6 +72,7 @@
       <label for="description">Description</label>
 
       <textarea
+        [readOnly]="selectedPoint && selectedPoint.id"
         id="description"
         rows="5"
         cols="30"
@@ -79,7 +84,7 @@
 
 
   <div class="flex justify-content-end gap-2 mt-2 actions">
-    <p-button label="Отмена" severity="secondary" (onClick)="visibleDialog = false"/>
-    <p-button label="Сохранить" (onClick)="saveNewPoint()"/>
+    <p-button label="Закрыть" severity="secondary" (onClick)="visibleDialog = false"/>
+    <p-button *ngIf="!(selectedPoint && selectedPoint.id)" label="Сохранить" (onClick)="saveNewPoint()"/>
   </div>
 </p-dialog>
