@@ -28,16 +28,25 @@ interface MockData {
 })
 export class HomeComponent implements AfterViewInit, OnInit {
   @ViewChild('svgContainer') svgContainer!: ElementRef;
+  @ViewChild('transformGroup') transformGroup!: ElementRef;
 
   points: { pointName: string; coordinateX: number; coordinateY: number; description: string; id: number }[] = [];
-  svgWidth = 1000; // Установи размеры SVG под твой план
+  svgWidth = 800; // Размер SVG (подстрой под твои данные)
   svgHeight = 600;
+  scale = 1;
+  panX = 0;
+  panY = 0;
+  lastPanX = 0;
+  lastPanY = 0;
+  lastScale = 1;
+
+
   selectedPoint: MockData | null = null;
 
   visibleDialog = false;
   svgForm!: FormGroup;
   mockData: MockData[] = [];
-
+  viewBox = `0 0 ${this.svgWidth} ${this.svgHeight}`;
 
   constructor(
     private storage: StorageService
@@ -45,9 +54,61 @@ export class HomeComponent implements AfterViewInit, OnInit {
   }
 
   ngAfterViewInit() {
+    const hammer = new Hammer(this.svgContainer.nativeElement);
+
+    hammer.get('pinch').set({enable: true});
+    hammer.get('pan').set({direction: Hammer.DIRECTION_ALL});
+
+    hammer.on('pinch', (event) => this.onPinch(event));
+    hammer.on('pan', (event) => this.onPan(event));
+    hammer.on('pinchend', () => this.onPinchEnd());
+    hammer.on('panend', () => this.onPanEnd());
+
+    this.svgContainer.nativeElement.addEventListener('wheel', (event: WheelEvent) => this.onWheel(event));
+
+
     setTimeout(() => {
       this.svgContainer.nativeElement.getBoundingClientRect(); // Принудительное обновление размеров
     }, 0);
+  }
+
+  onPinch(event: HammerInput) {
+    this.scale = Math.max(0.5, Math.min(3, this.lastScale * event.scale));
+    this.updateTransform();
+  }
+
+  onPinchEnd() {
+    this.lastScale = this.scale;
+  }
+
+  onPan(event: HammerInput) {
+    this.panX = this.lastPanX + event.deltaX;
+    this.panY = this.lastPanY + event.deltaY;
+    this.updateTransform();
+  }
+
+  onPanEnd() {
+    this.lastPanX = this.panX;
+    this.lastPanY = this.panY;
+  }
+
+  onWheel(event: WheelEvent) {
+    event.preventDefault();
+    const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+    this.scale = Math.max(0.5, Math.min(3, this.scale * zoomFactor));
+    this.updateTransform();
+  }
+
+  updateTransform() {
+    this.transformGroup.nativeElement.setAttribute(
+      'transform',
+      `translate(${this.panX}, ${this.panY}) scale(${this.scale})`
+    );
+  }
+
+  onDoubleClick(event: MouseEvent) {
+    event.preventDefault();
+    this.addPoint(event);
   }
 
   ngOnInit(): void {

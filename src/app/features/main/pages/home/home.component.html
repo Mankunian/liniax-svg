@@ -1,40 +1,49 @@
 <div class="container">
   <div class="column">
-    <svg
-      #svgContainer
-      [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight"
-      preserveAspectRatio="none"
-      (click)="addPoint($event)"
-      style="width: 100%; height: 100%; border: 2px solid #0b5394; border-radius: 10px">
+    <div class="svg-container">
+      <svg
+        #svgContainer
+        [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight"
+        preserveAspectRatio="none"
+        (dblclick)="onDoubleClick($event)"
+        style="width: 100%; height: 100%; border: 2px solid #0b5394; border-radius: 10px; touch-action: none;"
+      >
+        <g #transformGroup [attr.transform]="'translate(' + panX + ',' + panY + ') scale(' + scale + ')'">
+          <!-- Фоновое изображение (план) -->
+          <image
+            [attr.href]="'assets/qq.svg'"
+            [attr.width]="svgWidth"
+            [attr.height]="svgHeight"
+            pointer-events="none"
+          />
 
-      <!-- Фоновое изображение (прозрачный SVG план) -->
-      <image [attr.href]="'assets/qq.svg'"
-             width="100%"
-             height="100%"
-             pointer-events="none"/>
+          <!-- Динамические точки -->
+          <circle
+            *ngFor="let point of points; let i = index"
+            [attr.cx]="point.coordinateX"
+            [attr.cy]="point.coordinateY"
+            r="5"
+            fill="#203856"
+            (click)="showInfo($event, point)"
+            style="cursor: pointer"
+          />
 
-      <!-- Динамические точки -->
-      <circle
-        *ngFor="let point of points; let i = index"
-        [attr.cx]="point.coordinateX"
-        [attr.cy]="point.coordinateY"
-        r="5"
-        [attr.fill]="'#203856'"
-        (click)="showInfo($event, point)"
-        style="cursor: pointer"
-      />
+          <!-- Точка из формы -->
+          <circle
+            *ngIf="svgForm.get('coordinateX')?.value && svgForm.get('coordinateY')?.value"
+            [attr.cx]="svgForm.get('coordinateX')?.value"
+            [attr.cy]="svgForm.get('coordinateY')?.value"
+            r="5"
+            fill="#203856"
+            stroke="white"
+            stroke-width="1"
+            style="cursor: pointer"
+          />
+        </g>
+      </svg>
+    </div>
 
-      <circle
-        *ngIf="svgForm.get('coordinateX')?.value && svgForm.get('coordinateY')?.value"
-        [attr.cx]="svgForm.get('coordinateX')?.value"
-        [attr.cy]="svgForm.get('coordinateY')?.value"
-        r="5"
-        [attr.fill]="'#203856'"
-        stroke="white"
-        stroke-width="1"
-        style="cursor: pointer"
-      />
-    </svg>
+
   </div>
 
 </div>
