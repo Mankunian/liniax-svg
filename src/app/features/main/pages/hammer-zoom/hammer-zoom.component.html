@@ -1,0 +1,21 @@
+<div class="svg-container" #svgContainer>
+  <svg
+    #svgElement
+    width="400"
+    height="400"
+    viewBox="0 0 200 200"
+    style="border: 2px solid black; touch-action: none;"
+  >
+    <g #transformGroup>
+      <!-- Фоновое изображение -->
+      <image [attr.href]="'assets/qq.svg'"
+             width="200"
+             height="200"
+             pointer-events="none"/>
+
+      <!-- Другие элементы -->
+      <circle cx="100" cy="100" r="40" stroke="black" stroke-width="2" fill="red"/>
+      <rect x="50" y="50" width="50" height="50" fill="blue"/>
+    </g>
+  </svg>
+</div>
