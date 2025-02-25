@@ -14,3 +14,6 @@ input:focus, textarea:focus {
   outline: none; /* Убирает синюю обводку */
   box-shadow: none; /* Убирает тень, если она есть */
 }
+.d-none {
+  display: none
+}

@@ -161,8 +161,14 @@ export class HomeComponent implements AfterViewInit, OnInit {
     // Сохраняем обновленный массив
     this.storage.setItem('mockData', mockData);
 
-    this.visibleDialog = false;
-    this.getMockData();
+    // Обновляем массив точек для отображения
+    // this.points = [...mockData];
+    window.location.reload();
+
+    // Закрываем диалог
+    // this.visibleDialog = false;
+
+
   }
 
 }

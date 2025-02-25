@@ -5,7 +5,7 @@
       [attr.viewBox]="'0 0 ' + svgWidth + ' ' + svgHeight"
       preserveAspectRatio="none"
       (click)="addPoint($event)"
-      style="width: 100%; height: 100%; border: 2px solid blue;">
+      style="width: 100%; height: 100%; border: 2px solid #0b5394;">
 
       <!-- Фоновое изображение (прозрачный SVG план) -->
       <image [attr.href]="'assets/plan.jpg'"
@@ -14,21 +14,25 @@
              pointer-events="none"/>
 
       <!-- Динамические точки -->
-      <circle *ngFor="let point of points; let i = index"
-              [attr.cx]="point.coordinateX"
-              [attr.cy]="point.coordinateY"
-              r="5"
-              fill="blue"
-              (click)="showInfo($event, point)"/>
+      <circle
+        *ngFor="let point of points; let i = index"
+        [attr.cx]="point.coordinateX"
+        [attr.cy]="point.coordinateY"
+        r="5"
+        [attr.fill]="'#203856'"
+        (click)="showInfo($event, point)"
+        style="cursor: pointer"
+      />
 
       <circle
         *ngIf="svgForm.get('coordinateX')?.value && svgForm.get('coordinateY')?.value"
         [attr.cx]="svgForm.get('coordinateX')?.value"
         [attr.cy]="svgForm.get('coordinateY')?.value"
         r="5"
-        fill="blue"
+        [attr.fill]="'#203856'"
         stroke="white"
         stroke-width="1"
+        style="cursor: pointer"
       />
     </svg>
   </div>
@@ -37,7 +41,7 @@
 
 <p-dialog [header]="selectedPoint && selectedPoint.id ? 'View point' : 'Add point'" [modal]="true"
           [(visible)]="visibleDialog" [style]="{ width: '40rem' }">
-  <span class="p-text-secondary block mb-5">
+  <span class="p-text-secondary block mb-5 d-none">
     {{ selectedPoint && selectedPoint.id ? 'Update' : 'Add' }} your information.
   </span>
 
