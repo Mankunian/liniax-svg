@@ -30,11 +30,14 @@ interface MockData {
 export class HomeComponent implements AfterViewInit, OnInit {
   @ViewChild('svgContainer') svgContainer!: ElementRef;
   @ViewChild('transformGroup') transformGroup!: ElementRef;
-  originalViewBox = ''; // Изначальное значение viewBox
-  points: { pointName: string; coordinateX: number; coordinateY: number; description: string; id: number }[] = [];
   svgWidth = 800; // Размер SVG (подстрой под твои данные)
   svgHeight = 600;
+  viewBox = '';
+  defaultViewBox = '';
+  points: { pointName: string; coordinateX: number; coordinateY: number; description: string; id: number }[] = [];
   scale = 1;
+  translateX = 0;
+  translateY = 0;
   panX = 0;
   panY = 0;
   lastPanX = 0;
@@ -52,10 +55,11 @@ export class HomeComponent implements AfterViewInit, OnInit {
   selectedFloor: string = '1';
   planByFloorImage: string = 'assets/plan/1.svg';
 
+
   constructor(
     private storage: StorageService
   ) {
-    this.originalViewBox = `0 0 ${this.svgWidth} ${this.svgHeight}`;
+    this.viewBox = `0 0 ${this.svgWidth} ${this.svgHeight}`;
   }
 
   ngAfterViewInit() {
@@ -120,6 +124,8 @@ export class HomeComponent implements AfterViewInit, OnInit {
     this.initForm();
     this.getMockData();
 
+    this.defaultViewBox = `0 0 ${this.svgWidth} ${this.svgHeight}`;
+    this.viewBox = this.defaultViewBox;
   }
 
   initForm() {
@@ -151,14 +157,8 @@ export class HomeComponent implements AfterViewInit, OnInit {
     }))
   }
 
-
   addPoint(event: MouseEvent) {
     const svg = this.svgContainer.nativeElement as SVGSVGElement;
-    // Проверяем, изменился ли viewBox
-    if (svg.getAttribute('viewBox') !== this.originalViewBox) {
-      alert('Вернитесь в исходное положение перед добавлением точки.');
-      return;
-    }
 
 
     this.svgForm.reset();
@@ -252,6 +252,20 @@ export class HomeComponent implements AfterViewInit, OnInit {
     setTimeout(() => {
       this.getMockData();
     }, 2000)
+  }
+
+
+  onResetSvg() {
+    this.viewBox = this.defaultViewBox;
+    this.scale = 1;
+    this.translateX = 0;
+    this.translateY = 0;
+
+    // Сбрасываем transform, если используешь group (<g>)
+    const svgElement = document.querySelector('#svgContainer g');
+    if (svgElement) {
+      (svgElement as SVGGElement).setAttribute('transform', '');
+    }
   }
 
 }
