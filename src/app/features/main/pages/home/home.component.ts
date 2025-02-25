@@ -64,7 +64,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
     hammer.on('pinchend', () => this.onPinchEnd());
     hammer.on('panend', () => this.onPanEnd());
 
-    // this.svgContainer.nativeElement.addEventListener('wheel', (event: WheelEvent) => this.onWheel(event));
+    this.svgContainer.nativeElement.addEventListener('wheel', (event: WheelEvent) => this.onWheel(event));
 
 
     setTimeout(() => {
