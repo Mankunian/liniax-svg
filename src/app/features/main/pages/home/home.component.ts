@@ -4,11 +4,12 @@ import {CardModule} from "primeng/card";
 import {Button} from "primeng/button";
 import {DialogModule} from "primeng/dialog";
 import {InputTextModule} from "primeng/inputtext";
-import {ReactiveFormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {FormGroup, FormControl, Validators} from '@angular/forms';
 import {InputTextareaModule} from "primeng/inputtextarea";
 import {StorageService} from "../../../../services/storage.service";
 import {isArray} from "@angular/compiler-cli/src/ngtsc/annotations/common";
+import {SelectButtonModule} from "primeng/selectbutton";
 
 interface MockData {
   id: number,
@@ -21,7 +22,7 @@ interface MockData {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, CardModule, Button, DialogModule, InputTextModule, ReactiveFormsModule, InputTextareaModule, // Добавь этот импорт
+  imports: [CommonModule, CardModule, Button, DialogModule, InputTextModule, ReactiveFormsModule, InputTextareaModule, SelectButtonModule, FormsModule, // Добавь этот импорт
   ], // Добавляем сюда
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -39,13 +40,17 @@ export class HomeComponent implements AfterViewInit, OnInit {
   lastPanX = 0;
   lastPanY = 0;
   lastScale = 1;
-
-
   selectedPoint: MockData | null = null;
-
   visibleDialog = false;
   svgForm!: FormGroup;
   mockData: MockData[] = [];
+  floorOptions: any[] = [
+    {label: '1st floor', value: '1', img: '1.svg'},
+    {label: '2nd floor', value: '2', img: '2.svg'},
+    {label: '3rd floor', value: '3', img: '3.png'}
+  ];
+  selectedFloor: string = '1';
+  planByFloorImage: string = 'assets/plan/1.svg';
 
   constructor(
     private storage: StorageService
@@ -235,6 +240,18 @@ export class HomeComponent implements AfterViewInit, OnInit {
     // this.visibleDialog = false;
 
 
+  }
+
+  onSelectFloor() {
+    const foundFloor = this.floorOptions.find(f => f.value === this.selectedFloor);
+    this.planByFloorImage = `assets/plan/${foundFloor.img}`;
+
+    //clear points
+    this.points = [];
+
+    setTimeout(() => {
+      this.getMockData();
+    }, 2000)
   }
 
 }
