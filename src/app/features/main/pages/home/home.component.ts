@@ -8,7 +8,6 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {FormGroup, FormControl, Validators} from '@angular/forms';
 import {InputTextareaModule} from "primeng/inputtextarea";
 import {StorageService} from "../../../../services/storage.service";
-import {isArray} from "@angular/compiler-cli/src/ngtsc/annotations/common";
 import {SelectButtonModule} from "primeng/selectbutton";
 
 interface MockData {
@@ -22,8 +21,17 @@ interface MockData {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, CardModule, Button, DialogModule, InputTextModule, ReactiveFormsModule, InputTextareaModule, SelectButtonModule, FormsModule, // Добавь этот импорт
-  ], // Добавляем сюда
+  imports: [
+    CommonModule,
+    CardModule,
+    Button,
+    DialogModule,
+    InputTextModule,
+    ReactiveFormsModule,
+    InputTextareaModule,
+    SelectButtonModule,
+    FormsModule, // Добавь этот импорт
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -157,26 +165,45 @@ export class HomeComponent implements AfterViewInit, OnInit {
     }))
   }
 
-  addPoint(event: MouseEvent) {
+  addPoint(event: MouseEvent | TouchEvent) {
     const svg = this.svgContainer.nativeElement as SVGSVGElement;
-
-
     this.svgForm.reset();
-    const rect = svg.getBoundingClientRect(); // Размеры SVG в пикселях
 
-    // Преобразуем координаты клика в систему SVG
-    const scaleX = this.svgWidth / rect.width;
-    const scaleY = this.svgHeight / rect.height;
-    const svgX = (event.clientX - rect.left) * scaleX;
-    const svgY = (event.clientY - rect.top) * scaleY;
+    let clientX: number, clientY: number;
+
+    if (event instanceof MouseEvent) {
+      clientX = event.clientX;
+      clientY = event.clientY;
+    } else if (event instanceof TouchEvent) {
+      // Берем координаты первого касания
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    } else {
+      return;
+    }
+
+    // Создаем точку в системе координат окна
+    const point = svg.createSVGPoint();
+    point.x = clientX;
+    point.y = clientY;
+
+    // Получаем матрицу трансформации SVG
+    const ctm = svg.getScreenCTM();
+    if (!ctm) {
+      console.warn("Не удалось получить CTM, используем приблизительные координаты.");
+      return;
+    }
+
+    // Преобразуем координаты в систему SVG
+    const svgPoint = point.matrixTransform(ctm.inverse());
 
     // Добавляем точку в список
-    this.addPointToList(svgX, svgY);
+    this.addPointToList(svgPoint.x, svgPoint.y);
 
     // Заполняем форму
     this.svgForm.patchValue({
-      coordinateX: svgX,
-      coordinateY: svgY,
+      coordinateX: svgPoint.x,
+      coordinateY: svgPoint.y,
       id: null,
       pointName: null,
       description: null
@@ -189,6 +216,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
       this.visibleDialog = true;
     }, 1000);
   }
+
 
   private addPointToList(x: number, y: number) {
     this.points = [...this.points, {description: "", id: 0, pointName: "", coordinateX: x, coordinateY: y}];
