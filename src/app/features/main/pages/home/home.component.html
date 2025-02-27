@@ -5,7 +5,7 @@
       [options]="floorOptions"
       [(ngModel)]="selectedFloor"
       optionLabel="label"
-      optionValue="value" />
+      optionValue="value"/>
 
     <p-multiSelect
       (ngModelChange)="filterPoints()"
@@ -16,7 +16,7 @@
       placeholder="Выберите слои">
     </p-multiSelect>
 
-    <p-button (onClick)="onResetSvg()" label="Reset" [outlined]="true" />
+    <p-button (onClick)="onResetSvg()" label="Reset" [outlined]="true"/>
   </div>
   <div class="column">
     <div class="svg-container">
@@ -36,17 +36,6 @@
             pointer-events="none"
           />
 
-          <!-- Динамические точки -->
-<!--          <circle-->
-<!--            *ngFor="let point of points; let i = index"-->
-<!--            [attr.cx]="point.coordinateX"-->
-<!--            [attr.cy]="point.coordinateY"-->
-<!--            r="5"-->
-<!--            fill="#203856"-->
-<!--            (click)="showInfo($event, point)"-->
-<!--            style="cursor: pointer"-->
-<!--          />-->
-
           <!-- Точка из формы -->
           <circle
             *ngIf="svgForm.get('coordinateX')?.value && svgForm.get('coordinateY')?.value"
@@ -62,11 +51,12 @@
             <ng-container *ngIf="selectedLayers.includes(layer.id)">
               <ng-container *ngFor="let point of points">
                 <circle
+                  (click)="showInfo(point, layer)"
                   *ngIf="point.layerId.includes(layer.id)"
                   [attr.cx]="point.coordinateX"
                   [attr.cy]="point.coordinateY"
                   r="5"
-                  [attr.fill]="getColor(point.layerId)"
+                  [attr.fill]="getColorByLayer(point.layerId)"
                   style="cursor: pointer"
                 />
               </ng-container>
@@ -141,18 +131,46 @@
       </p-dropdown>
     </div>
 
-    <div class="d-grid mt-2">
-      <p-colorPicker
-        formControlName="color" />
-
-      {{svgForm.get('color')?.value}}
-    </div>
-
   </form>
 
 
   <div class="flex justify-content-end gap-2 mt-2 actions">
     <p-button label="Close" severity="secondary" (onClick)="visibleDialog = false"/>
     <p-button *ngIf="!(selectedPoint && selectedPoint.id)" label="Save" (onClick)="saveNewPoint()"/>
+  </div>
+</p-dialog>
+
+
+<p-dialog
+  [(visible)]="isPointInfoDialog"
+  header="Информация о точке"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '400px' }"
+>
+  <div class="p-fluid">
+    <div class="info-field d-flex justify-content-between bordered">
+      <label>Название:</label>
+      <span>{{ selectedPoint?.pointName || '—' }}</span>
+    </div>
+
+    <div class="info-field d-flex justify-content-between bordered mt-2">
+      <label>Описание:</label>
+      <span>{{ selectedPoint?.description || '—' }}</span>
+    </div>
+
+    <div class="info-field d-flex justify-content-between bordered mt-2">
+      <label>Координаты:</label>
+      <span>X: {{ selectedPoint?.coordinateX }} <br> Y: {{ selectedPoint?.coordinateY }}</span>
+    </div>
+
+    <div class="info-field d-flex justify-content-between bordered mt-2">
+      <label>Слой:</label>
+      <span class="layer-badge">
+        {{ getLayerName(selectedPoint?.layerId) }}
+      </span>
+    </div>
+
+
   </div>
 </p-dialog>

@@ -32,3 +32,8 @@ input:focus, textarea:focus, p-button:focus {
 .w-100 {
   width: 100%;
 }
+.bordered {
+  border: 1px solid darkgrey;
+  border-radius: 5px;
+  padding: 10px;
+}

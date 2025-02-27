@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from "@angular/common";
 import {CardModule} from "primeng/card";
-import {Button} from "primeng/button";
+import {Button, ButtonDirective} from "primeng/button";
 import {DialogModule} from "primeng/dialog";
 import {InputTextModule} from "primeng/inputtext";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
@@ -11,7 +11,6 @@ import {StorageService} from "../../../../services/storage.service";
 import {SelectButtonModule} from "primeng/selectbutton";
 import {DropdownModule} from "primeng/dropdown";
 import {MultiSelectModule} from "primeng/multiselect";
-import {ColorPickerModule} from "primeng/colorpicker";
 
 interface MockData {
   id: number,
@@ -20,12 +19,12 @@ interface MockData {
   description: string,
   coordinateX: number,
   coordinateY: number,
-  color: string
 }
 
 interface Layers {
   id: string,
   name: string,
+  color: string
 }
 
 interface Point {
@@ -35,7 +34,6 @@ interface Point {
   description: string,
   id: number,
   layerId: string,
-  color: string
 }
 
 @Component({
@@ -53,7 +51,7 @@ interface Point {
     FormsModule,
     DropdownModule,
     MultiSelectModule,
-    ColorPickerModule,
+    ButtonDirective,
     // Добавь этот импорт
   ],
   templateUrl: './home.component.html',
@@ -91,7 +89,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
   layers: Layers[] = [];
   selectedLayers: string[] = [];
-
+  isPointInfoDialog = false;
   constructor(
     private storage: StorageService
   ) {
@@ -171,7 +169,6 @@ export class HomeComponent implements AfterViewInit, OnInit {
       pointName: new FormControl(null),
       description: new FormControl(null),
       layerId: new FormControl(null),
-      color: new FormControl(null),
     })
   }
 
@@ -192,7 +189,6 @@ export class HomeComponent implements AfterViewInit, OnInit {
       description: item.description,
       layerId: item.layerId,
       id: item.id,
-      color: item.color
     }))
 
     this.filterPoints(); // Фильтруем после загрузки
@@ -200,9 +196,9 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
   getLayers() {
     this.layers = [
-      { id: 'cameras', name: 'Камеры' },
-      { id: 'sensors', name: 'Датчики температуры' },
-      { id: 'checkpoints', name: 'Контрольные точки' }
+      { id: 'cameras', name: 'Камеры', color: '#FF5733'},
+      { id: 'sensors', name: 'Датчики температуры', color: '#33FF57' },
+      { id: 'checkpoints', name: 'Контрольные точки', color: '#3357FF' }
     ];
     this.selectedLayers = ['cameras']; // По умолчанию выбран один слой
 
@@ -251,7 +247,6 @@ export class HomeComponent implements AfterViewInit, OnInit {
       pointName: null,
       description: null,
       layerId: this.selectedLayers[0],
-      color: null,
     });
 
     this.selectedPoint = this.svgForm.value;
@@ -264,7 +259,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
 
   private addPointToList(x: number, y: number) {
-    this.points = [...this.points, {description: "", id: 0, pointName: "", coordinateX: x, coordinateY: y, layerId: '', color: ''}];
+    this.points = [...this.points, {description: "", id: 0, pointName: "", coordinateX: x, coordinateY: y, layerId: ''}];
   }
 
   bindForm() {
@@ -292,8 +287,6 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
     // Добавляем новый объект в массив
     mockData.push(this.svgForm.value);
-
-    console.log(mockData)
 
     // Сохраняем обновленный массив
     this.storage.setItem('mockData', mockData);
@@ -338,21 +331,22 @@ export class HomeComponent implements AfterViewInit, OnInit {
     }
   }
 
-  getColor(layerId: string): string {
-    const colors = ['#FF5733', '#33FF57', '#3357FF']; // Три случайных цвета
-    const index = Math.abs(this.hashCode(layerId)) % colors.length;
-    return colors[index];
+  getColorByLayer(layerId: string | undefined) {
+    const layer = this.layers.find(l => l.id === layerId);
+    return layer ? layer.color : 'black';
   }
 
-  private hashCode(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = (hash << 5) - hash + str.charCodeAt(i);
-      hash |= 0;
-    }
-    return hash;
+  getLayerName(layerId: string | undefined): string {
+    const layer = this.layers.find(l => l.id === layerId);
+    return layer ? layer.name : 'Неизвестный слой';
   }
 
+  showInfo(point: Point, layer: Layers) {
+    console.log(layer)
+    console.log(point)
+    this.isPointInfoDialog = true;
+    this.selectedPoint = point;
+  }
 
 
 }
