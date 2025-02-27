@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {CommonModule} from "@angular/common";
 import {CardModule} from "primeng/card";
-import {Button} from "primeng/button";
+import {Button, ButtonDirective} from "primeng/button";
 import {DialogModule} from "primeng/dialog";
 import {InputTextModule} from "primeng/inputtext";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
@@ -9,13 +9,31 @@ import {FormGroup, FormControl, Validators} from '@angular/forms';
 import {InputTextareaModule} from "primeng/inputtextarea";
 import {StorageService} from "../../../../services/storage.service";
 import {SelectButtonModule} from "primeng/selectbutton";
+import {DropdownModule} from "primeng/dropdown";
+import {MultiSelectModule} from "primeng/multiselect";
 
 interface MockData {
   id: number,
+  layerId: string,
   pointName: string,
   description: string,
   coordinateX: number,
-  coordinateY: number
+  coordinateY: number,
+}
+
+interface Layers {
+  id: string,
+  name: string,
+  color: string
+}
+
+interface Point {
+  pointName: string,
+  coordinateX: number,
+  coordinateY: number,
+  description: string,
+  id: number,
+  layerId: string,
 }
 
 @Component({
@@ -30,7 +48,11 @@ interface MockData {
     ReactiveFormsModule,
     InputTextareaModule,
     SelectButtonModule,
-    FormsModule, // Добавь этот импорт
+    FormsModule,
+    DropdownModule,
+    MultiSelectModule,
+    ButtonDirective,
+    // Добавь этот импорт
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -42,7 +64,9 @@ export class HomeComponent implements AfterViewInit, OnInit {
   svgHeight = 600;
   viewBox = '';
   defaultViewBox = '';
-  points: { pointName: string; coordinateX: number; coordinateY: number; description: string; id: number }[] = [];
+  points: Point[] = [];
+  filteredPoints: Point[] = []; // Фильтрованные точки
+
   scale = 1;
   translateX = 0;
   translateY = 0;
@@ -63,11 +87,14 @@ export class HomeComponent implements AfterViewInit, OnInit {
   selectedFloor: string = '1';
   planByFloorImage: string = 'assets/plan/1.svg';
 
-
+  layers: Layers[] = [];
+  selectedLayers: string[] = [];
+  isPointInfoDialog = false;
   constructor(
     private storage: StorageService
   ) {
     this.viewBox = `0 0 ${this.svgWidth} ${this.svgHeight}`;
+    this.defaultViewBox = this.viewBox;
   }
 
   ngAfterViewInit() {
@@ -130,10 +157,8 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
   ngOnInit(): void {
     this.initForm();
+    this.getLayers();
     this.getMockData();
-
-    this.defaultViewBox = `0 0 ${this.svgWidth} ${this.svgHeight}`;
-    this.viewBox = this.defaultViewBox;
   }
 
   initForm() {
@@ -142,7 +167,8 @@ export class HomeComponent implements AfterViewInit, OnInit {
       coordinateY: new FormControl(null),
       id: new FormControl(null),
       pointName: new FormControl(null),
-      description: new FormControl(null)
+      description: new FormControl(null),
+      layerId: new FormControl(null),
     })
   }
 
@@ -161,8 +187,21 @@ export class HomeComponent implements AfterViewInit, OnInit {
       coordinateY: item.coordinateY,
       pointName: item.pointName,
       description: item.description,
-      id: item.id
+      layerId: item.layerId,
+      id: item.id,
     }))
+
+    this.filterPoints(); // Фильтруем после загрузки
+  }
+
+  getLayers() {
+    this.layers = [
+      { id: 'cameras', name: 'Камеры', color: '#FF5733'},
+      { id: 'sensors', name: 'Датчики температуры', color: '#33FF57' },
+      { id: 'checkpoints', name: 'Контрольные точки', color: '#3357FF' }
+    ];
+    this.selectedLayers = ['cameras']; // По умолчанию выбран один слой
+
   }
 
   addPoint(event: MouseEvent | TouchEvent) {
@@ -206,7 +245,8 @@ export class HomeComponent implements AfterViewInit, OnInit {
       coordinateY: svgPoint.y,
       id: null,
       pointName: null,
-      description: null
+      description: null,
+      layerId: this.selectedLayers[0],
     });
 
     this.selectedPoint = this.svgForm.value;
@@ -219,16 +259,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
 
   private addPointToList(x: number, y: number) {
-    this.points = [...this.points, {description: "", id: 0, pointName: "", coordinateX: x, coordinateY: y}];
-  }
-
-  showInfo(event: MouseEvent, point: any) {
-    event.stopPropagation(); // Чтобы клик по точке не добавлял новую точку
-    this.selectedPoint = point; // Сохраняем точку
-
-    this.visibleDialog = true;
-    this.bindForm();
-
+    this.points = [...this.points, {description: "", id: 0, pointName: "", coordinateX: x, coordinateY: y, layerId: ''}];
   }
 
   bindForm() {
@@ -261,13 +292,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
     this.storage.setItem('mockData', mockData);
 
     // Обновляем массив точек для отображения
-    // this.points = [...mockData];
     window.location.reload();
-
-    // Закрываем диалог
-    // this.visibleDialog = false;
-
-
   }
 
   onSelectFloor() {
@@ -295,5 +320,33 @@ export class HomeComponent implements AfterViewInit, OnInit {
       (svgElement as SVGGElement).setAttribute('transform', '');
     }
   }
+
+  filterPoints() {
+    if (this.selectedLayers.length === 0) {
+      this.filteredPoints = this.points;
+    } else {
+      this.filteredPoints = this.points.filter(point =>
+        this.selectedLayers.some(layer => point.layerId.includes(layer))
+      );
+    }
+  }
+
+  getColorByLayer(layerId: string | undefined) {
+    const layer = this.layers.find(l => l.id === layerId);
+    return layer ? layer.color : 'black';
+  }
+
+  getLayerName(layerId: string | undefined): string {
+    const layer = this.layers.find(l => l.id === layerId);
+    return layer ? layer.name : 'Неизвестный слой';
+  }
+
+  showInfo(point: Point, layer: Layers) {
+    console.log(layer)
+    console.log(point)
+    this.isPointInfoDialog = true;
+    this.selectedPoint = point;
+  }
+
 
 }
