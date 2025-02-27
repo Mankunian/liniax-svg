@@ -7,6 +7,15 @@
       optionLabel="label"
       optionValue="value" />
 
+    <p-multiSelect
+      (ngModelChange)="filterPoints()"
+      [options]="layers"
+      [(ngModel)]="selectedLayers"
+      optionLabel="name"
+      optionValue="id"
+      placeholder="Выберите слои">
+    </p-multiSelect>
+
     <p-button (onClick)="onResetSvg()" label="Reset" [outlined]="true" />
   </div>
   <div class="column">
@@ -28,27 +37,42 @@
           />
 
           <!-- Динамические точки -->
-          <circle
-            *ngFor="let point of points; let i = index"
-            [attr.cx]="point.coordinateX"
-            [attr.cy]="point.coordinateY"
-            r="5"
-            fill="#203856"
-            (click)="showInfo($event, point)"
-            style="cursor: pointer"
-          />
+<!--          <circle-->
+<!--            *ngFor="let point of points; let i = index"-->
+<!--            [attr.cx]="point.coordinateX"-->
+<!--            [attr.cy]="point.coordinateY"-->
+<!--            r="5"-->
+<!--            fill="#203856"-->
+<!--            (click)="showInfo($event, point)"-->
+<!--            style="cursor: pointer"-->
+<!--          />-->
 
           <!-- Точка из формы -->
-          <circle
-            *ngIf="svgForm.get('coordinateX')?.value && svgForm.get('coordinateY')?.value"
-            [attr.cx]="svgForm.get('coordinateX')?.value"
-            [attr.cy]="svgForm.get('coordinateY')?.value"
-            r="5"
-            fill="#203856"
-            stroke="white"
-            stroke-width="1"
-            style="cursor: pointer"
-          />
+<!--          <circle-->
+<!--            *ngIf="svgForm.get('coordinateX')?.value && svgForm.get('coordinateY')?.value"-->
+<!--            [attr.cx]="svgForm.get('coordinateX')?.value"-->
+<!--            [attr.cy]="svgForm.get('coordinateY')?.value"-->
+<!--            r="5"-->
+<!--            fill="#203856"-->
+<!--            stroke="white"-->
+<!--            stroke-width="1"-->
+<!--            style="cursor: pointer"-->
+<!--          />-->
+          <ng-container *ngFor="let layer of layers">
+            <ng-container *ngIf="selectedLayers.includes(layer.id)">
+              <ng-container *ngFor="let point of points">
+                <circle
+                  *ngIf="point.layerId.includes(layer.id)"
+                  [attr.cx]="point.coordinateX"
+                  [attr.cy]="point.coordinateY"
+                  r="5"
+                  [attr.fill]="getColor(point.layerId)"
+                  style="cursor: pointer"
+                />
+              </ng-container>
+            </ng-container>
+          </ng-container>
+
         </g>
       </svg>
     </div>
@@ -100,6 +124,22 @@
         cols="30"
         pInputTextarea
         formControlName="description"></textarea>
+    </div>
+
+    <div class="d-grid mt-2">
+      <label for="description">Layer</label>
+
+      <p-dropdown
+        class="w-100"
+        [style]="{width: '100%'}"
+        [options]="layers"
+        formControlName="layerId"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Выберите слои"
+      >
+
+      </p-dropdown>
     </div>
 
   </form>
