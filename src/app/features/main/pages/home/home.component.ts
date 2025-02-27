@@ -11,6 +11,7 @@ import {StorageService} from "../../../../services/storage.service";
 import {SelectButtonModule} from "primeng/selectbutton";
 import {DropdownModule} from "primeng/dropdown";
 import {MultiSelectModule} from "primeng/multiselect";
+import {ColorPickerModule} from "primeng/colorpicker";
 
 interface MockData {
   id: number,
@@ -18,7 +19,8 @@ interface MockData {
   pointName: string,
   description: string,
   coordinateX: number,
-  coordinateY: number
+  coordinateY: number,
+  color: string
 }
 
 interface Layers {
@@ -32,7 +34,8 @@ interface Point {
   coordinateY: number,
   description: string,
   id: number,
-  layerId: string
+  layerId: string,
+  color: string
 }
 
 @Component({
@@ -50,6 +53,7 @@ interface Point {
     FormsModule,
     DropdownModule,
     MultiSelectModule,
+    ColorPickerModule,
     // Добавь этот импорт
   ],
   templateUrl: './home.component.html',
@@ -167,6 +171,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
       pointName: new FormControl(null),
       description: new FormControl(null),
       layerId: new FormControl(null),
+      color: new FormControl(null),
     })
   }
 
@@ -186,7 +191,8 @@ export class HomeComponent implements AfterViewInit, OnInit {
       pointName: item.pointName,
       description: item.description,
       layerId: item.layerId,
-      id: item.id
+      id: item.id,
+      color: item.color
     }))
 
     this.filterPoints(); // Фильтруем после загрузки
@@ -244,7 +250,8 @@ export class HomeComponent implements AfterViewInit, OnInit {
       id: null,
       pointName: null,
       description: null,
-      layerId: this.selectedLayers[0]
+      layerId: this.selectedLayers[0],
+      color: null,
     });
 
     this.selectedPoint = this.svgForm.value;
@@ -257,16 +264,7 @@ export class HomeComponent implements AfterViewInit, OnInit {
 
 
   private addPointToList(x: number, y: number) {
-    this.points = [...this.points, {description: "", id: 0, pointName: "", coordinateX: x, coordinateY: y, layerId: ''}];
-  }
-
-  showInfo(event: MouseEvent, point: any) {
-    event.stopPropagation(); // Чтобы клик по точке не добавлял новую точку
-    this.selectedPoint = point; // Сохраняем точку
-
-    this.visibleDialog = true;
-    this.bindForm();
-
+    this.points = [...this.points, {description: "", id: 0, pointName: "", coordinateX: x, coordinateY: y, layerId: '', color: ''}];
   }
 
   bindForm() {

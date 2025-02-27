@@ -48,16 +48,16 @@
 <!--          />-->
 
           <!-- Точка из формы -->
-<!--          <circle-->
-<!--            *ngIf="svgForm.get('coordinateX')?.value && svgForm.get('coordinateY')?.value"-->
-<!--            [attr.cx]="svgForm.get('coordinateX')?.value"-->
-<!--            [attr.cy]="svgForm.get('coordinateY')?.value"-->
-<!--            r="5"-->
-<!--            fill="#203856"-->
-<!--            stroke="white"-->
-<!--            stroke-width="1"-->
-<!--            style="cursor: pointer"-->
-<!--          />-->
+          <circle
+            *ngIf="svgForm.get('coordinateX')?.value && svgForm.get('coordinateY')?.value"
+            [attr.cx]="svgForm.get('coordinateX')?.value"
+            [attr.cy]="svgForm.get('coordinateY')?.value"
+            r="5"
+            fill="#203856"
+            stroke="white"
+            stroke-width="1"
+            style="cursor: pointer"
+          />
           <ng-container *ngFor="let layer of layers">
             <ng-container *ngIf="selectedLayers.includes(layer.id)">
               <ng-container *ngFor="let point of points">
@@ -138,8 +138,14 @@
         optionValue="id"
         placeholder="Выберите слои"
       >
-
       </p-dropdown>
+    </div>
+
+    <div class="d-grid mt-2">
+      <p-colorPicker
+        formControlName="color" />
+
+      {{svgForm.get('color')?.value}}
     </div>
 
   </form>
